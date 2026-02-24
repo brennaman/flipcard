@@ -1,0 +1,44 @@
+import { notFound } from 'next/navigation';
+import { getDeck, getCards, getCategories } from '@/lib/data';
+import { DeckHeader } from '@/components/deck/DeckHeader';
+import { CardGrid } from '@/components/deck/CardGrid';
+import { LocalModeBanner } from '@/components/LocalModeBanner';
+import { isSupabaseConfigured } from '@/lib/supabase';
+
+interface PageProps {
+  params: { deckId: string };
+}
+
+export default async function DeckPage({ params }: PageProps) {
+  const { deckId } = params;
+
+  const [deck, cards, categories] = await Promise.all([
+    getDeck(deckId),
+    getCards(deckId),
+    getCategories(deckId),
+  ]);
+
+  if (!deck) {
+    notFound();
+  }
+
+  return (
+    <div>
+      {!isSupabaseConfigured && <LocalModeBanner />}
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <DeckHeader deck={deck} />
+        <CardGrid deckId={deckId} initialCards={cards} initialCategories={categories} />
+      </main>
+    </div>
+  );
+}
+
+export async function generateMetadata({ params }: PageProps) {
+  const deck = await getDeck(params.deckId);
+  if (!deck) return { title: 'Deck not found — FlipCard' };
+  return {
+    title: `${deck.name} — FlipCard`,
+    description: deck.description ?? `A FlipCard deck: ${deck.name}`,
+  };
+}

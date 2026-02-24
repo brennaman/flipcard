@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: theme('colors.surface.0');
+  --color-surface: theme('colors.surface.50');
+  --color-surface-raised: theme('colors.white');
+  --color-border: theme('colors.surface.200');
+  --color-text-primary: theme('colors.surface.800');
+  --color-text-secondary: theme('colors.surface.500');
+  --color-text-muted: theme('colors.surface.400');
+  --color-accent: theme('colors.primary.500');
+  --color-accent-hover: theme('colors.primary.600');
+}
+
+.dark {
+  --color-bg: theme('colors.surface.900');
+  --color-surface: theme('colors.surface.800');
+  --color-surface-raised: theme('colors.surface.700');
+  --color-border: theme('colors.surface.700');
+  --color-text-primary: theme('colors.surface.100');
+  --color-text-secondary: theme('colors.surface.400');
+  --color-text-muted: theme('colors.surface.500');
+  --color-accent: theme('colors.primary.400');
+  --color-accent-hover: theme('colors.primary.300');
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
