@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createDeck, createCard, updateCard, deleteCard, createCategory, deleteCategory } from '@/lib/data';
+import { createDeck, createCard, updateCard, deleteCard, createCategory, deleteCategory, reorderCards } from '@/lib/data';
 import type { DeckInput, FlashCardInput, CategoryInput, Deck, FlashCard, Category } from '@/types';
 
 // ─── Deck ─────────────────────────────────────────────────────────────────────
@@ -30,6 +30,11 @@ export async function updateCardAction(
 
 export async function deleteCardAction(deckId: string, cardId: string): Promise<void> {
   await deleteCard(deckId, cardId);
+  revalidatePath(`/deck/${deckId}`);
+}
+
+export async function reorderCardsAction(deckId: string, cardIds: string[]): Promise<void> {
+  await reorderCards(deckId, cardIds);
   revalidatePath(`/deck/${deckId}`);
 }
 

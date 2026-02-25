@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Tag } from '@/components/ui/Tag';
 import { CardContextMenu } from './CardContextMenu';
 import type { FlashCard as FlashCardType } from '@/types';
@@ -15,25 +14,25 @@ const colorMap: Record<string, 'blue' | 'emerald' | 'amber' | 'violet' | 'slate'
 
 interface FlashCardProps {
   card: FlashCardType;
-  index: number;
   onClick: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  isDragging?: boolean;
+  tabIndex?: number;
+  onFocus?: () => void;
+  onKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>;
+  cardRef?: React.RefCallback<HTMLButtonElement>;
 }
 
-export function FlashCard({ card, index, onClick, onEdit, onDelete }: FlashCardProps) {
-  const maxStaggerDelay = 0.4;
-  const delay = Math.min(index * 0.05, maxStaggerDelay);
-
+export function FlashCard({ card, onClick, onEdit, onDelete, isDragging, tabIndex, onFocus, onKeyDown, cardRef }: FlashCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay, ease: 'easeOut' }}
-      className="relative group"
-    >
+    <div className={`relative${isDragging ? ' opacity-40' : ''}`}>
       <button
+        ref={cardRef}
         onClick={onClick}
+        onFocus={onFocus}
+        onKeyDown={onKeyDown}
+        tabIndex={tabIndex}
         aria-label={`View details for ${card.title}`}
         aria-expanded={false}
         className="w-full h-28 flex flex-col items-center justify-center p-3
@@ -43,7 +42,7 @@ export function FlashCard({ card, index, onClick, onEdit, onDelete }: FlashCardP
                    hover:shadow-md hover:border-primary-200 dark:hover:border-primary-700
                    hover:scale-[1.02] active:scale-[0.98]
                    transition-all duration-200
-                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2
+                   focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
                    text-center cursor-pointer"
       >
         <span className="text-sm font-semibold text-surface-700 dark:text-surface-100 text-balance leading-snug">
@@ -60,6 +59,6 @@ export function FlashCard({ card, index, onClick, onEdit, onDelete }: FlashCardP
       </button>
 
       <CardContextMenu onEdit={onEdit} onDelete={onDelete} />
-    </motion.div>
+    </div>
   );
 }

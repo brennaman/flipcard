@@ -194,3 +194,25 @@ export async function deleteCard(deckId: string, cardId: string): Promise<void> 
   }
   store.flashcards.delete(cardId);
 }
+
+export async function reorderCards(deckId: string, cardIds: string[]): Promise<void> {
+  if (isSupabaseConfigured) {
+    const supabase = await getSupabaseClient();
+    await Promise.all(
+      cardIds.map((id, index) =>
+        supabase!
+          .from('flashcards')
+          .update({ sort_order: index })
+          .eq('id', id)
+          .eq('deck_id', deckId)
+      )
+    );
+    return;
+  }
+  cardIds.forEach((id, index) => {
+    const card = store.flashcards.get(id);
+    if (card && card.deck_id === deckId) {
+      store.flashcards.set(id, { ...card, sort_order: index });
+    }
+  });
+}

@@ -48,6 +48,18 @@ export default function RootLayout({
       <body
         className={`${dmSans.variable} ${jetbrainsMono.variable} font-sans bg-surface-0 dark:bg-surface-900 text-surface-800 dark:text-surface-100 min-h-screen antialiased`}
       >
+        {/* Skip navigation — first focusable element on the page */}
+        <a
+          href="#card-grid"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50
+                     focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg
+                     focus:bg-surface-0 dark:focus:bg-surface-800
+                     focus:text-primary-600 dark:focus:text-primary-400
+                     focus:ring-2 focus:ring-primary-500 focus:outline-none
+                     focus:text-sm focus:font-medium"
+        >
+          Skip to cards
+        </a>
         <Header />
         {children}
       </body>
