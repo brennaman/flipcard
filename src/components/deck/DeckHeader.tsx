@@ -7,9 +7,10 @@ import type { Deck } from '@/types';
 
 interface DeckHeaderProps {
   deck: Deck;
+  isOwner: boolean;
 }
 
-export function DeckHeader({ deck }: DeckHeaderProps) {
+export function DeckHeader({ deck, isOwner: _isOwner }: DeckHeaderProps) {
   const [copied, setCopied] = useState(false);
 
   const copyLink = async () => {

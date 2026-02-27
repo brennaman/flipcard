@@ -4,6 +4,7 @@ export interface Deck {
   description: string | null;
   created_at: string;
   updated_at: string;
+  user_id?: string | null;
 }
 
 export interface Category {

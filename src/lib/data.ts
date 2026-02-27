@@ -1,5 +1,6 @@
 import type { Deck, FlashCard, Category, DeckInput, FlashCardInput, CategoryInput } from '@/types';
-import { isSupabaseConfigured, getSupabaseClient } from './supabase';
+import { isSupabaseConfigured } from './supabase';
+import { createSupabaseServerClient } from './supabase-server';
 import { store } from './store';
 import { randomUUID } from 'crypto';
 
@@ -7,8 +8,8 @@ import { randomUUID } from 'crypto';
 
 export async function getDeck(deckId: string): Promise<Deck | null> {
   if (isSupabaseConfigured) {
-    const supabase = await getSupabaseClient();
-    const { data } = await supabase!
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase
       .from('decks')
       .select('*')
       .eq('id', deckId)
@@ -18,12 +19,12 @@ export async function getDeck(deckId: string): Promise<Deck | null> {
   return store.decks.get(deckId) ?? null;
 }
 
-export async function createDeck(input: DeckInput): Promise<Deck> {
+export async function createDeck(input: DeckInput, userId?: string | null): Promise<Deck> {
   if (isSupabaseConfigured) {
-    const supabase = await getSupabaseClient();
-    const { data, error } = await supabase!
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
       .from('decks')
-      .insert({ name: input.name, description: input.description ?? null })
+      .insert({ name: input.name, description: input.description ?? null, user_id: userId ?? null })
       .select()
       .single();
     if (error) throw new Error(error.message);
@@ -37,6 +38,7 @@ export async function createDeck(input: DeckInput): Promise<Deck> {
     description: input.description ?? null,
     created_at: now,
     updated_at: now,
+    user_id: null,
   };
   store.decks.set(id, deck);
   return deck;
@@ -46,8 +48,8 @@ export async function createDeck(input: DeckInput): Promise<Deck> {
 
 export async function getCategories(deckId: string): Promise<Category[]> {
   if (isSupabaseConfigured) {
-    const supabase = await getSupabaseClient();
-    const { data } = await supabase!
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase
       .from('categories')
       .select('*')
       .eq('deck_id', deckId)
@@ -61,8 +63,8 @@ export async function getCategories(deckId: string): Promise<Category[]> {
 
 export async function createCategory(deckId: string, input: CategoryInput): Promise<Category> {
   if (isSupabaseConfigured) {
-    const supabase = await getSupabaseClient();
-    const { data, error } = await supabase!
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
       .from('categories')
       .insert({ deck_id: deckId, name: input.name, color: input.color })
       .select()
@@ -84,8 +86,8 @@ export async function createCategory(deckId: string, input: CategoryInput): Prom
 
 export async function deleteCategory(deckId: string, categoryId: string): Promise<void> {
   if (isSupabaseConfigured) {
-    const supabase = await getSupabaseClient();
-    await supabase!.from('categories').delete().eq('id', categoryId).eq('deck_id', deckId);
+    const supabase = await createSupabaseServerClient();
+    await supabase.from('categories').delete().eq('id', categoryId).eq('deck_id', deckId);
     return;
   }
   store.categories.delete(categoryId);
@@ -102,8 +104,8 @@ export async function deleteCategory(deckId: string, categoryId: string): Promis
 
 export async function getCards(deckId: string): Promise<FlashCard[]> {
   if (isSupabaseConfigured) {
-    const supabase = await getSupabaseClient();
-    const { data } = await supabase!
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase
       .from('flashcards')
       .select('*, category:categories(*)')
       .eq('deck_id', deckId)
@@ -124,10 +126,10 @@ export async function getCards(deckId: string): Promise<FlashCard[]> {
 
 export async function createCard(deckId: string, input: FlashCardInput): Promise<FlashCard> {
   if (isSupabaseConfigured) {
-    const supabase = await getSupabaseClient();
+    const supabase = await createSupabaseServerClient();
     const existing = await getCards(deckId);
     const sort_order = existing.length;
-    const { data, error } = await supabase!
+    const { data, error } = await supabase
       .from('flashcards')
       .insert({ deck_id: deckId, ...input, sort_order })
       .select('*, category:categories(*)')
@@ -160,8 +162,8 @@ export async function updateCard(
   input: FlashCardInput
 ): Promise<FlashCard> {
   if (isSupabaseConfigured) {
-    const supabase = await getSupabaseClient();
-    const { data, error } = await supabase!
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
       .from('flashcards')
       .update({ ...input, updated_at: new Date().toISOString() })
       .eq('id', cardId)
@@ -188,8 +190,8 @@ export async function updateCard(
 
 export async function deleteCard(deckId: string, cardId: string): Promise<void> {
   if (isSupabaseConfigured) {
-    const supabase = await getSupabaseClient();
-    await supabase!.from('flashcards').delete().eq('id', cardId).eq('deck_id', deckId);
+    const supabase = await createSupabaseServerClient();
+    await supabase.from('flashcards').delete().eq('id', cardId).eq('deck_id', deckId);
     return;
   }
   store.flashcards.delete(cardId);
@@ -197,10 +199,10 @@ export async function deleteCard(deckId: string, cardId: string): Promise<void> 
 
 export async function reorderCards(deckId: string, cardIds: string[]): Promise<void> {
   if (isSupabaseConfigured) {
-    const supabase = await getSupabaseClient();
+    const supabase = await createSupabaseServerClient();
     await Promise.all(
       cardIds.map((id, index) =>
-        supabase!
+        supabase
           .from('flashcards')
           .update({ sort_order: index })
           .eq('id', id)

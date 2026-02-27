@@ -2,12 +2,20 @@
 
 import { revalidatePath } from 'next/cache';
 import { createDeck, createCard, updateCard, deleteCard, createCategory, deleteCategory, reorderCards } from '@/lib/data';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
 import type { DeckInput, FlashCardInput, CategoryInput, Deck, FlashCard, Category } from '@/types';
 
 // ─── Deck ─────────────────────────────────────────────────────────────────────
 
 export async function createDeckAction(input: DeckInput): Promise<Deck> {
-  return createDeck(input);
+  let userId: string | null = null;
+  if (isSupabaseConfigured) {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id ?? null;
+  }
+  return createDeck(input, userId);
 }
 
 // ─── Cards ────────────────────────────────────────────────────────────────────

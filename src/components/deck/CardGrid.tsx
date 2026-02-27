@@ -36,9 +36,10 @@ interface CardGridProps {
   deckId: string;
   initialCards: FlashCardType[];
   initialCategories: Category[];
+  isOwner?: boolean;
 }
 
-export function CardGrid({ deckId, initialCards, initialCategories }: CardGridProps) {
+export function CardGrid({ deckId, initialCards, initialCategories, isOwner = true }: CardGridProps) {
   const [cards, setCards] = useState<FlashCardType[]>(initialCards);
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -84,7 +85,7 @@ export function CardGrid({ deckId, initialCards, initialCategories }: CardGridPr
     })
   );
 
-  const isDragEnabled = selectedCategory === null;
+  const isDragEnabled = selectedCategory === null && isOwner;
 
   // ─── Keyboard navigation ─────────────────────────────────────────────────────
   const getColumnCount = useCallback((): number => {
@@ -294,7 +295,7 @@ export function CardGrid({ deckId, initialCards, initialCategories }: CardGridPr
 
       {/* Card grid */}
       {filteredCards.length === 0 && cards.length === 0 ? (
-        <EmptyState onAddCard={handleAddCard} />
+        <EmptyState onAddCard={isOwner ? handleAddCard : undefined} />
       ) : filteredCards.length === 0 ? (
         <EmptyState isFiltered />
       ) : (
@@ -324,19 +325,22 @@ export function CardGrid({ deckId, initialCards, initialCategories }: CardGridPr
                   onEdit={() => handleEditCard(card)}
                   onDelete={() => handleDeleteCard(card)}
                   dragEnabled={isDragEnabled}
+                  isOwner={isOwner}
                   tabIndex={focusedIndex === index ? 0 : -1}
                   onFocus={() => setFocusedIndex(index)}
                   onKeyDown={(e) => handleCardKeyDown(e, index)}
                   cardRef={(el) => { cardRefs.current[index] = el; }}
                 />
               ))}
-              <AddCardButton
-                ref={addCardButtonRef}
-                onClick={handleAddCard}
-                onKeyDown={handleAddCardKeyDown}
-                onFocus={() => setFocusedIndex(filteredCards.length)}
-                tabIndex={addCardTabIndex}
-              />
+              {isOwner && (
+                <AddCardButton
+                  ref={addCardButtonRef}
+                  onClick={handleAddCard}
+                  onKeyDown={handleAddCardKeyDown}
+                  onFocus={() => setFocusedIndex(filteredCards.length)}
+                  tabIndex={addCardTabIndex}
+                />
+              )}
             </div>
           </SortableContext>
         </DndContext>

@@ -2,15 +2,31 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { createBrowserClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/Button';
 import { createDeckAction } from '@/app/actions';
 
-export function CreateDeckForm() {
+interface CreateDeckFormProps {
+  isLoggedIn: boolean;
+}
+
+export function CreateDeckForm({ isLoggedIn }: CreateDeckFormProps) {
   const router = useRouter();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleSignIn = async () => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +44,19 @@ export function CreateDeckForm() {
       setLoading(false);
     }
   };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="mt-10 p-6 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-center">
+        <p className="text-surface-600 dark:text-surface-300 mb-4">
+          Sign in to create a new deck.
+        </p>
+        <Button size="lg" className="w-full" onClick={handleSignIn}>
+          Sign in with Google
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="mt-10 space-y-4 text-left">

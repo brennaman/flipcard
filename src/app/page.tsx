@@ -2,10 +2,18 @@ import { CreateDeckForm } from '@/components/landing/CreateDeckForm';
 import { EnterDeckUrl } from '@/components/landing/EnterDeckUrl';
 import { getSampleDeckId } from '@/lib/store';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
 import Link from 'next/link';
 
-export default function HomePage() {
+export default async function HomePage() {
   const sampleDeckId = !isSupabaseConfigured ? getSampleDeckId() : null;
+
+  let isLoggedIn = true; // local mode: always allow creation
+  if (isSupabaseConfigured) {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    isLoggedIn = !!user;
+  }
 
   return (
     <main className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4">
@@ -33,7 +41,7 @@ export default function HomePage() {
           Create and share flashcard decks for interview prep, studying, or anything.
         </p>
 
-        <CreateDeckForm />
+        <CreateDeckForm isLoggedIn={isLoggedIn} />
 
         {/* Divider */}
         <div className="my-8 flex items-center gap-4">
