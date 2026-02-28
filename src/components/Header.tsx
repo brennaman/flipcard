@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { DarkModeToggle } from './DarkModeToggle';
 import { AuthButton } from './AuthButton';
+import { UserMenu } from './UserMenu';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 
@@ -22,8 +23,10 @@ export async function Header() {
           FlipCard
         </Link>
         <div className="flex items-center gap-3">
-          {isSupabaseConfigured && <AuthButton user={user} />}
           <DarkModeToggle />
+          {isSupabaseConfigured && (
+            user ? <UserMenu user={user} /> : <AuthButton user={null} />
+          )}
         </div>
       </nav>
     </header>

@@ -26,6 +26,7 @@ export function seedSampleData() {
     description: 'Sample deck — running in local mode without Supabase',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
+    is_private: false,
   });
 
   store.categories.set(catBehavioral, {

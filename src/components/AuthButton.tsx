@@ -6,20 +6,22 @@ import type { User } from '@supabase/supabase-js';
 
 interface AuthButtonProps {
   user: User | null;
+  redirectPath?: string;
 }
 
-export function AuthButton({ user }: AuthButtonProps) {
+export function AuthButton({ user, redirectPath }: AuthButtonProps) {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   const handleSignIn = async () => {
+    const redirectTo = redirectPath
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}`
+      : `${window.location.origin}/auth/callback`;
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo },
     });
   };
 

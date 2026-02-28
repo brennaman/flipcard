@@ -23,7 +23,7 @@ import { EmptyState } from './EmptyState';
 import { ToastContainer } from '@/components/ui/Toast';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/hooks/useToast';
-import type { FlashCard as FlashCardType, Category } from '@/types';
+import type { FlashCard as FlashCardType, Category, DeckPermissions } from '@/types';
 import {
   createCardAction,
   updateCardAction,
@@ -36,10 +36,10 @@ interface CardGridProps {
   deckId: string;
   initialCards: FlashCardType[];
   initialCategories: Category[];
-  isOwner?: boolean;
+  permissions: DeckPermissions;
 }
 
-export function CardGrid({ deckId, initialCards, initialCategories, isOwner = true }: CardGridProps) {
+export function CardGrid({ deckId, initialCards, initialCategories, permissions }: CardGridProps) {
   const [cards, setCards] = useState<FlashCardType[]>(initialCards);
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -85,7 +85,7 @@ export function CardGrid({ deckId, initialCards, initialCategories, isOwner = tr
     })
   );
 
-  const isDragEnabled = selectedCategory === null && isOwner;
+  const isDragEnabled = selectedCategory === null && permissions.isOwner;
 
   // ─── Keyboard navigation ─────────────────────────────────────────────────────
   const getColumnCount = useCallback((): number => {
@@ -295,7 +295,7 @@ export function CardGrid({ deckId, initialCards, initialCategories, isOwner = tr
 
       {/* Card grid */}
       {filteredCards.length === 0 && cards.length === 0 ? (
-        <EmptyState onAddCard={isOwner ? handleAddCard : undefined} />
+        <EmptyState onAddCard={permissions.canEdit ? handleAddCard : undefined} />
       ) : filteredCards.length === 0 ? (
         <EmptyState isFiltered />
       ) : (
@@ -325,14 +325,15 @@ export function CardGrid({ deckId, initialCards, initialCategories, isOwner = tr
                   onEdit={() => handleEditCard(card)}
                   onDelete={() => handleDeleteCard(card)}
                   dragEnabled={isDragEnabled}
-                  isOwner={isOwner}
+                  canEdit={permissions.canEdit}
+                  canDelete={permissions.canDelete}
                   tabIndex={focusedIndex === index ? 0 : -1}
                   onFocus={() => setFocusedIndex(index)}
                   onKeyDown={(e) => handleCardKeyDown(e, index)}
                   cardRef={(el) => { cardRefs.current[index] = el; }}
                 />
               ))}
-              {isOwner && (
+              {permissions.canEdit && (
                 <AddCardButton
                   ref={addCardButtonRef}
                   onClick={handleAddCard}

@@ -5,6 +5,27 @@ export interface Deck {
   created_at: string;
   updated_at: string;
   user_id?: string | null;
+  is_private: boolean;
+}
+
+export type Permission = 'viewer' | 'editor' | 'manager';
+
+export interface DeckShare {
+  id: string;
+  deck_id: string;
+  user_id: string | null;
+  email: string | null;
+  permission: Permission;
+  token: string | null;
+  accepted_at: string | null;
+  created_at: string;
+}
+
+export interface DeckPermissions {
+  isOwner: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  canShare: boolean;
 }
 
 export interface Category {

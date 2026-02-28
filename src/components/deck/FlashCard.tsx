@@ -18,14 +18,15 @@ interface FlashCardProps {
   onEdit: () => void;
   onDelete: () => void;
   isDragging?: boolean;
-  isOwner?: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
   tabIndex?: number;
   onFocus?: () => void;
   onKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>;
   cardRef?: React.RefCallback<HTMLButtonElement>;
 }
 
-export function FlashCard({ card, onClick, onEdit, onDelete, isDragging, isOwner = true, tabIndex, onFocus, onKeyDown, cardRef }: FlashCardProps) {
+export function FlashCard({ card, onClick, onEdit, onDelete, isDragging, canEdit, canDelete, tabIndex, onFocus, onKeyDown, cardRef }: FlashCardProps) {
   return (
     <div className={`relative${isDragging ? ' opacity-40' : ''}`}>
       <button
@@ -59,7 +60,7 @@ export function FlashCard({ card, onClick, onEdit, onDelete, isDragging, isOwner
         )}
       </button>
 
-      {isOwner && <CardContextMenu onEdit={onEdit} onDelete={onDelete} />}
+      {(canEdit || canDelete) && <CardContextMenu onEdit={onEdit} onDelete={onDelete} canEdit={canEdit} canDelete={canDelete} />}
     </div>
   );
 }

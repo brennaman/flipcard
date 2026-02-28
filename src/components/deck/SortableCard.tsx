@@ -13,7 +13,8 @@ interface SortableCardProps {
   onEdit: () => void;
   onDelete: () => void;
   dragEnabled: boolean;
-  isOwner?: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
   tabIndex?: number;
   onFocus?: () => void;
   onKeyDown?: React.KeyboardEventHandler<HTMLButtonElement>;
@@ -27,7 +28,8 @@ export function SortableCard({
   onEdit,
   onDelete,
   dragEnabled,
-  isOwner = true,
+  canEdit,
+  canDelete,
   tabIndex,
   onFocus,
   onKeyDown,
@@ -71,7 +73,8 @@ export function SortableCard({
           onEdit={onEdit}
           onDelete={onDelete}
           isDragging={isDragging}
-          isOwner={isOwner}
+          canEdit={canEdit}
+          canDelete={canDelete}
           tabIndex={tabIndex}
           onFocus={onFocus}
           onKeyDown={onKeyDown}
