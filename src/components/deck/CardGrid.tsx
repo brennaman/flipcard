@@ -19,6 +19,7 @@ import { CardDetail } from './CardDetail';
 import { CardForm } from './CardForm';
 import { AddCardButton } from './AddCardButton';
 import { CategoryFilter } from './CategoryFilter';
+import { CardSizeToggle } from './CardSizeToggle';
 import { EmptyState } from './EmptyState';
 import { ToastContainer } from '@/components/ui/Toast';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -50,6 +51,44 @@ export function CardGrid({ deckId, initialCards, initialCategories, permissions 
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [, startTransition] = useTransition();
   const { toasts, showToast, removeToast } = useToast();
+
+  // ─── Card size ─────────────────────────────────────────────────────────────
+  type CardSize = 'sm' | 'md' | 'lg';
+  const STORAGE_KEY = `flipcard-card-size-${deckId}`;
+  const [cardSize, setCardSize] = useState<CardSize>('md');
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY) as CardSize | null;
+    if (stored && ['sm', 'md', 'lg'].includes(stored)) setCardSize(stored);
+  }, [STORAGE_KEY]);
+
+  const handleSizeChange = (size: CardSize) => {
+    setCardSize(size);
+    localStorage.setItem(STORAGE_KEY, size);
+  };
+
+  const SIZE_CONFIG = {
+    sm: {
+      gridClass: 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4',
+      heightClass: 'h-24',
+      textClass: 'text-xs',
+      clampClass: 'line-clamp-3',
+    },
+    md: {
+      gridClass: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4',
+      heightClass: 'h-28',
+      textClass: 'text-sm',
+      clampClass: 'line-clamp-3',
+    },
+    lg: {
+      gridClass: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4',
+      heightClass: 'h-40',
+      textClass: 'text-base',
+      clampClass: 'line-clamp-4',
+    },
+  } as const;
+
+  const sizeConfig = SIZE_CONFIG[cardSize];
 
   // ─── Roving tabindex ─────────────────────────────────────────────────────────
   // Tracks which item in the grid is the Tab "entry point".
@@ -280,18 +319,21 @@ export function CardGrid({ deckId, initialCards, initialCategories, permissions 
 
   return (
     <>
-      {/* Category filter */}
-      {categories.length > 0 && (
-        <div className="mb-6">
-          <CategoryFilter
-            categories={categories}
-            selected={selectedCategory}
-            onSelect={setSelectedCategory}
-            cardCount={cards.length}
-            filteredCount={filteredCards.length}
-          />
+      {/* Toolbar: category filter + card size toggle */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex-1 min-w-0">
+          {categories.length > 0 && (
+            <CategoryFilter
+              categories={categories}
+              selected={selectedCategory}
+              onSelect={setSelectedCategory}
+              cardCount={cards.length}
+              filteredCount={filteredCards.length}
+            />
+          )}
         </div>
-      )}
+        <CardSizeToggle value={cardSize} onChange={handleSizeChange} />
+      </div>
 
       {/* Card grid */}
       {filteredCards.length === 0 && cards.length === 0 ? (
@@ -314,7 +356,7 @@ export function CardGrid({ deckId, initialCards, initialCategories, permissions 
               tabIndex={-1}
               onClick={handleGridClick}
               onFocus={handleGridFocus}
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 focus:outline-none"
+              className={`${sizeConfig.gridClass} focus:outline-none`}
             >
               {filteredCards.map((card, index) => (
                 <SortableCard
@@ -327,6 +369,9 @@ export function CardGrid({ deckId, initialCards, initialCategories, permissions 
                   dragEnabled={isDragEnabled}
                   canEdit={permissions.canEdit}
                   canDelete={permissions.canDelete}
+                  heightClass={sizeConfig.heightClass}
+                  textClass={sizeConfig.textClass}
+                  clampClass={sizeConfig.clampClass}
                   tabIndex={focusedIndex === index ? 0 : -1}
                   onFocus={() => setFocusedIndex(index)}
                   onKeyDown={(e) => handleCardKeyDown(e, index)}
@@ -340,6 +385,7 @@ export function CardGrid({ deckId, initialCards, initialCategories, permissions 
                   onKeyDown={handleAddCardKeyDown}
                   onFocus={() => setFocusedIndex(filteredCards.length)}
                   tabIndex={addCardTabIndex}
+                  heightClass={sizeConfig.heightClass}
                 />
               )}
             </div>
